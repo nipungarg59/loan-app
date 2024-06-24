@@ -9,7 +9,7 @@ from users.authentication.jwt_utils import generate_jwt_token
 from users.serializers import UserSerializer
 
 
-class CreateUserAPIView(APIView):
+class RegisterUserAPIView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
