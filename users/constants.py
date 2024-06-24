@@ -1,0 +1,9 @@
+USER_ROLE_ADMIN = "Admin"
+USER_ROLE_CUSTOMER = "Customer"
+
+USER_ROLE_CHOICES = [
+    (USER_ROLE_ADMIN, "Admin"),
+    (USER_ROLE_CUSTOMER, "Customer")
+]
+
+JWT_COOKIE_KEY = "jwt"
