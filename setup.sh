@@ -3,5 +3,5 @@ python3 -m venv venv
 
 pip install -r requirements.txt
 
-./manage.py migrate
+python manage.py migrate
 
