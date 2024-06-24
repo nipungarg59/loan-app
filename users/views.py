@@ -4,7 +4,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from loanapp.responses import success_response, error_response
+from generics.responses.responses import success_response, error_response
 from users.authentication.jwt_utils import generate_jwt_token
 from users.serializers import UserSerializer
 
