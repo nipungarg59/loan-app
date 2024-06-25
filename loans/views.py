@@ -48,6 +48,9 @@ class ApproveLoanAPIView(APIView):
 
 
 class ListUserLoansAPIView(APIView):
+    """
+    This API will list all the user loans and their repayment
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -57,6 +60,12 @@ class ListUserLoansAPIView(APIView):
 
 
 class AddRepaymentAPIView(APIView):
+    """
+    This API will need the loan_id and repayment amount as input.
+    If amount can only pay partially then pending repayment will be updated by partial repayment
+    else if amount > repayment amount for single term then repayment will be marked as paid and
+    rest amount will be used for paying other repayments if left.
+    """
     permission_classes = [IsAuthenticated]
 
     def put(self, request, loan_id):
