@@ -11,3 +11,12 @@ class LoanManager(models.Manager):
     def get_pending_loan_by_id(self, loan_id):
         return self.filter(pk=loan_id, state=LOAN_STATE_PENDING)
 
+
+class LoanRepaymentManager(models.Manager):
+
+    def __init__(self) -> None:
+        super().__init__()
+
+    def get_pending_repayments_by_loan(self, loan):
+        return self.filter(loan=loan, state=LOAN_STATE_PENDING)
+
