@@ -5,5 +5,5 @@ urlpatterns = [
     path('create/', CreateLoanAPIView.as_view(), name='create-loan'),
     path('approve/<int:loan_id>/', ApproveLoanAPIView.as_view(), name='approve-loan'),
     path('my-loans/', ListUserLoansAPIView.as_view(), name='my-loans'),
-    path('add-repayment/<int:repayment_id>/', AddRepaymentAPIView.as_view(), name='add-repayment'),
+    path('add-repayment/<int:loan_id>/', AddRepaymentAPIView.as_view(), name='add-repayment'),
 ]

@@ -1,37 +1,47 @@
-from datetime import datetime, timedelta
+import decimal
 
-from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
 from generics.responses.responses import success_response, error_response
 from loans.constants import LOAN_STATE_PENDING, LOAN_STATE_APPROVED, LOAN_STATE_PAID
 from loans.models import Loan, LoanRepayment
-from loans.serializers import LoanSerializer, LoanRepaymentSerializer
-from loans.utils import get_loan_repayment_date_and_term
+from loans.serializers import LoanSerializer
+from loans.utils import get_loan_repayment_date_and_term, get_repayment_amount, is_repayment_complete
 from users.authorisation.admin_role_permission import AdminUserOnly
 
 
 class CreateLoanAPIView(APIView):
+    """
+    This API is to create the loans for the User
+    """
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = LoanSerializer(data=request.data)
+        data = request.data
+        data['user'] = request.user.pk
+        serializer = LoanSerializer(data=data)
         if serializer.is_valid():
             loan = serializer.save(user=request.user)
             # Create scheduled repayments
-            repayments = [LoanRepayment(loan=loan, repayment_date=repayment_date, amount=repayment_date) for (repayment_date, repayment_date) in get_loan_repayment_date_and_term(loan.amount, loan.term)]
+            repayments = [LoanRepayment(loan=loan, repayment_date=repayment_date, amount=amount) for (repayment_date, amount) in get_loan_repayment_date_and_term(loan.amount, loan.term)]
             LoanRepayment.objects.bulk_create(repayments)
             return success_response(LoanSerializer(loan).data, message='Loan created successfully', status_code=201)
         return error_response(serializer.errors, message='Invalid data', status_code=400)
 
 
 class ApproveLoanAPIView(APIView):
+    """
+    This API is to approve the loan by the admin user
+    """
     permission_classes = [IsAuthenticated, AdminUserOnly]
 
-    def post(self, request, loan_id):
+    def put(self, request, loan_id):
         # Update the loan
-        loan = get_object_or_404(Loan, id=loan_id, state=LOAN_STATE_PENDING)
+        loans = Loan.objects.get_pending_loan_by_id(loan_id)
+        if not loans.exists():
+            return error_response({}, message='Either loan is not in pending state or loan is already approved', status_code=404)
+        loan = loans.first()
         loan.state = LOAN_STATE_APPROVED
         loan.save()
         return success_response(LoanSerializer(loan).data, message='Loan approved successfully')
@@ -49,20 +59,30 @@ class ListUserLoansAPIView(APIView):
 class AddRepaymentAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, repayment_id):
-        repayment = get_object_or_404(LoanRepayment, id=repayment_id, state=LOAN_STATE_PENDING)
-        if repayment.loan.user != request.user:
-            return error_response('Permission denied', message='You can only repay your own loans', status_code=403)
-        amount = request.data.get('amount')
-        if amount < repayment.amount:
-            return error_response('Invalid amount', message='Repayment amount must be greater than or equal to the scheduled amount', status_code=400)
-        repayment.state = LOAN_STATE_PAID
-        repayment.save()
+    def put(self, request, loan_id):
+        try:
+            loan = Loan.objects.get(id=loan_id, user=request.user, state=LOAN_STATE_APPROVED)
+        except Loan.DoesNotExist:
+            raise error_response({}, message='Either loan is not approved or does not exist', status_code=404)
+
+        pending_repayments = LoanRepayment.objects.filter(loan=loan, state=LOAN_STATE_PENDING).order_by('repayment_date')
+
+        total_amount = decimal.Decimal(request.data.get('amount'))
+        remaining_amount = total_amount
+
+        for pending_repayment in pending_repayments:
+            if remaining_amount == decimal.Decimal(0):
+                break
+            repayment_amount = get_repayment_amount(pending_repayment, remaining_amount)
+            pending_repayment.amount_paid += repayment_amount
+            remaining_amount -= repayment_amount
+            if is_repayment_complete(pending_repayment):
+                pending_repayment.state = LOAN_STATE_PAID
+            pending_repayment.save()
 
         # Check if all repayments are paid
-        loan = repayment.loan
         if not LoanRepayment.objects.filter(loan=loan, state=LOAN_STATE_PENDING).exists():
             loan.state = LOAN_STATE_PAID
             loan.save()
 
-        return success_response(LoanRepaymentSerializer(repayment).data, message='Repayment added successfully')
+        return success_response(LoanSerializer(loan).data, message='Repayment added successfully')

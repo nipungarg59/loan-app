@@ -46,7 +46,7 @@ INSTALLED_APPS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'users.authentication.jwt_auth_backend.JWTAuthentication',
     ),
 }
 
@@ -139,7 +139,6 @@ JWT_ALGORITHM = 'HS256'
 JWT_EXPIRATION_DELTA = timedelta(days=7)
 
 # Authentication Backends
-AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'users.authentication.jwt_auth_backend.JWTAuthenticationBackend',
-]
+# AUTHENTICATION_BACKENDS = [
+#     'django.contrib.auth.backends.ModelBackend',
+# ]
