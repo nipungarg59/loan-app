@@ -33,7 +33,7 @@ This will start the project on port 8000
       2. Once called it will approve the loan for the user.
    6. **View User Loan** - `/loan/my-loans/`
       1. This will be used to view all the user loans, that are created by him.
-   7. **Add Repayment** - `/loan/add-repayment/1/`
+   7. **Add Repayment** - `/loan/add-repayment/<loan_id>/`
       1. This will need a loan id and amount, and will then balance the amount to all the repayments.
 
 # DB
