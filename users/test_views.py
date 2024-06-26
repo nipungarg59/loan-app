@@ -12,6 +12,9 @@ from django.contrib.auth.hashers import make_password
 class RegisterUserAPIViewTestCase(TestCase):
 
     def setUp(self):
+        # Clear existing data
+        User.objects.all().delete()
+
         self.client = APIClient()
 
     def test_register_user_success(self):
@@ -40,6 +43,9 @@ class RegisterUserAPIViewTestCase(TestCase):
 class FetchUserDetailsAPIViewTestCase(TestCase):
 
     def setUp(self):
+        # Clear existing data
+        User.objects.all().delete()
+
         self.client = APIClient()
         self.user = User.objects.create(
             user_name='user',
@@ -65,6 +71,9 @@ class FetchUserDetailsAPIViewTestCase(TestCase):
 class LoginAPIViewTestCase(TestCase):
 
     def setUp(self):
+        # Clear existing data
+        User.objects.all().delete()
+
         self.client = APIClient()
         self.user = User.objects.create(
             user_name='user',

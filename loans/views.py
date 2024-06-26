@@ -72,8 +72,8 @@ class AddRepaymentAPIView(APIView):
     def put(self, request, loan_id):
         try:
             loan = Loan.objects.get(id=loan_id, user=request.user, state=LOAN_STATE_APPROVED)
-        except Loan.DoesNotExist:
-            raise error_response({}, message='Either loan is not approved or does not exist', status_code=404)
+        except Exception:
+            return error_response({}, message='Either loan is not approved or does not exist', status_code=404)
 
         pending_repayments = LoanRepayment.objects.get_pending_repayments_by_loan(loan=loan).order_by('repayment_date')
 
