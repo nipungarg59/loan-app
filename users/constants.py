@@ -7,3 +7,8 @@ USER_ROLE_CHOICES = [
 ]
 
 JWT_COOKIE_KEY = "jwt"
+
+MESSAGE_USER_CREATED_SUCCESSFULLY = "User Created Successfully"
+MESSAGE_LOGIN_SUCCESSFUL = "Login successful"
+MESSAGE_INVALID_CREDENTIALS = "Invalid Credentials"
+

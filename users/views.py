@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 
 from generics.responses.responses import success_response, error_response
 from users.authentication.jwt_utils import generate_jwt_token
+from users.constants import MESSAGE_USER_CREATED_SUCCESSFULLY, MESSAGE_LOGIN_SUCCESSFUL, MESSAGE_INVALID_CREDENTIALS, \
+    JWT_COOKIE_KEY
 from users.models import User
 from users.serializers import UserSerializer
 
@@ -16,7 +18,7 @@ class RegisterUserAPIView(APIView):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return success_response(serializer.data, status_code=status.HTTP_201_CREATED, message="User Created Successfully")
+            return success_response(serializer.data, status_code=status.HTTP_201_CREATED, message=MESSAGE_USER_CREATED_SUCCESSFULLY)
         return error_response(serializer.errors, status_code=status.HTTP_400_BAD_REQUEST)
 
 
@@ -46,7 +48,7 @@ class LoginAPIView(APIView):
             data = {
                 'token': token
             }
-            response = success_response(data, status.HTTP_200_OK, 'Login successful')
-            response.set_cookie('jwt', token, httponly=True, samesite='Lax')
+            response = success_response(data, status.HTTP_200_OK, MESSAGE_LOGIN_SUCCESSFUL)
+            response.set_cookie(JWT_COOKIE_KEY, token, httponly=True, samesite='Lax')
             return response
-        return error_response({}, status.HTTP_401_UNAUTHORIZED, 'Invalid Credentials')
+        return error_response({}, status.HTTP_401_UNAUTHORIZED, MESSAGE_INVALID_CREDENTIALS)

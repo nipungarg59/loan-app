@@ -3,8 +3,9 @@ from unittest import TestCase
 
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
-from loans.models import Loan, LoanManager, LoanRepayment
+
 from loans.constants import LOAN_STATE_PENDING, LOAN_STATE_APPROVED, LOAN_STATE_PAID
+from loans.models import Loan, LoanRepayment
 from users.models import User
 
 
